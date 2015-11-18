@@ -24,17 +24,16 @@ void loop() {
       data[index] = inChar;   // Store it
       index++;                // Increment where to write next
     } else {
-      digitalWrite(13,HIGH);
-      Serial.println("Start");
       Serial.println(data);
+      Serial.println("START");
+      digitalWrite(13,HIGH);
       aes128_enc_single(key, data);
       digitalWrite(13,LOW);
-      Serial.println(data);
       Serial.println("DONE");
+      Serial.println(data);
       aes128_dec_single(key,data);
       Serial.println(data);
       index = 0;       
     }
   }
-
 }
