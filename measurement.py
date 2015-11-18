@@ -63,8 +63,9 @@ sbox_hex = [
 
 # modify following variables so they correspond to
 # the measurement setup
-numberOfTraces = 150 # 200
-traceSize = 550000 #370000
+# "Each sample is represented by 8 bit unsigned value (i.e., the length of the file is 370 000 bytes * 200 traces = 74 MB)"
+numberOfTraces = 200
+traceSize = 370000
 
 # modify the following variables to speed-up the measurement
 # (this can be done later after analysing the power trace)
