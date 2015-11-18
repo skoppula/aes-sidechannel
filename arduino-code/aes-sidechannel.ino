@@ -17,7 +17,7 @@ void setup() {
 }
 
 void loop() {
-  while (Serial.available() > 0) // Don't read unless you know there is data
+  while(Serial.available() > 0) // Don't read unless you know there is data
   {
     if(index < 16) {
       inChar = Serial.read(); // Read a character
