@@ -305,7 +305,8 @@ def wfm2read(filename, datapoints=None, step=1, startind=0):
         frames[0]['info']['postcharge_stop_offset']=info['postcharge_stop_offset']
         frames[0]['info']['end_of_curve_buffer_offset']=info['end_of_curve_buffer_offset']
 
-        #read data for the other frames from the file:
+        # read data for the other frames from the file:
+        # TODO: May want to change this so that we read multiple samples at a time for faster reads
         for n in xrange(1, N):
             frames[n] = {}
             frames[n]['info'] = {}
