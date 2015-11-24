@@ -2,7 +2,7 @@
 
 import random
 
-with open('./data/plaintexts.txt', 'r') as f:
+with open('./orig-plaintexts.txt', 'r') as f:
     plaintext_bytes = []
     for line in [l.strip() for l in f.readlines()]:
         plaintext_bytes.append([int(s, 16) for s in line.split(" ")])
@@ -24,7 +24,7 @@ assert num_lines > 0 and num_lines < 1000
 
 data_str = '\n'.join([str(arr)[1:-1] for arr in plaintext_bytes])
 
-with open('formatted-plaintexts.txt', 'w') as f:
+with open('plaintexts.txt', 'w') as f:
     f.write(data_str)
 
 
