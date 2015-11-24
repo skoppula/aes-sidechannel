@@ -1,6 +1,0 @@
-- first trace doesn't get printed until later (FIXED!)
-- we get a spurious first trace (because we get the extra trigger at
-the beginning)
-     *probably we should start when acquisitions > 1
-- At line 308-309 of wfmread.py, we may need to clean things up if we
-want to read in data faster (currently reads in one sample at a time)
