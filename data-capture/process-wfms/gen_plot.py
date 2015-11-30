@@ -1,19 +1,23 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import numpy as np 
+import matplotlib.pyplot as plt 
 import wfm2read_fast
 
-filename = '../../../trace-data/11-23-2015/4.wfm'
-yt = [None]*4
-for i in [1]:
-    yt[i-1],t,_,_,_,_ = wfm2read_fast.wfm2read(filename)
-    print "Read file: ", filename
-y = np.array(yt)
+# filename = 'W10SAME-PLAINTEXT.wfm'
 
-plt.plot(t, y[0], 'r')
-# plt.plot(t, y[2]/2, 'g')
-# plt.plot(t, y[1]+2, 'c')
-# plt.plot(t, y[3]+2, 'm')
-plt.show()
+def plot(filename):
+    yt = [None]*4
+    for i in [1]:
+        yt[i-1],t,_,_,_,_ = wfm2read_fast.wfm2read(filename)
+        print "Read file: ", filename
+    y = np.array(yt)
+    
+    plt.plot(t, y[0], 'r')
+    plt.savefig(filename[:-3])
+    plt.clf()
+    # plt.plot(t, y[2]/2, 'g')
+    # plt.plot(t, y[1]+2, 'c')
+    # plt.plot(t, y[3]+2, 'm')
+    # plt.show()
 
 # tmin = 0.012
 # tmax = 0.023
