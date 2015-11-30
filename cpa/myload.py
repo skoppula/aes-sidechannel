@@ -14,3 +14,7 @@ def myload(fname, trlen, start, len, n):
         traces[i, :] = t
     myfile.close()
     return traces
+
+def loadFromWFM(folder):
+    sys.path.append('../data-capture/process-wfms/')
+    import wfm2read_fast
