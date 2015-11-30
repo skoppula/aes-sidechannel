@@ -1,13 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import wfm2read
+import wfm2read_fast
 
-filename = '11-23-2015W4.wfm'
+filename = '../../../trace-data/11-23-2015/4.wfm'
 yt = [None]*4
 for i in [1]:
-    curr_filename = '11-23-2015W4.wfm'
-    yt[i-1],t,_,_,_,_ = wfm2read.wfm2read(curr_filename)
-    print "Read file: ", curr_filename
+    yt[i-1],t,_,_,_,_ = wfm2read_fast.wfm2read(filename)
+    print "Read file: ", filename
 y = np.array(yt)
 
 plt.plot(t, y[0], 'r')
