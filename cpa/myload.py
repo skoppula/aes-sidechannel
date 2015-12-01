@@ -26,23 +26,31 @@ def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
     sys.path.append('../data-capture/process-wfms/')
     import wfm2read_fast
 
-    data_scale = 1
     num_traces = sum([1 if fyle.endswith('.wfm') else 0 for fyle in os.listdir(infolder)])
 
     file_count = 0
     for fyle in os.listdir(infolder):
         if not fyle.endswith('.wfm'): continue
         print '\tReading',fyle, file_count,'/',num_traces
-        trace_values = wfm2read_fast.wfm2read(infolder+fyle)[0]
+        trace_values = wfm2read_fast.wfm2read(infolder+fyle)[0] 
         trimmed_values = trace_values[len(trace_values)*0.4:len(trace_values)*0.75]
+        def avg_map(arr, numSamps):
+            avged_arr = []
+            for i in range(len(arr)/numSamps):
+                nextClump = arr[i*numSamps:i*numSamps+numSamps]
+                nextValue = sum(nextClump)/numSamps
+                avged_arr.append(nextValue)
+            return avged_arr
+
+        averaged_values = avg_map(trimmed_values, 5)
         #average_values = []
         #for i in range(len(trace_values)/data_scale):
         #    average_values.append(sum(trace_values[data_scale*i:data_scale*i+data_scale]
         try:
             traces
         except NameError:
-            traces = np.zeros((num_traces, len(trimmed_values)/data_scale))
-        traces[file_count, :] = trimmed_values
+            traces = np.zeros((num_traces, len(averaged_values)))
+        traces[file_count, :] = averaged_values
         file_count += 1
         
     np.save(outfile, traces)
