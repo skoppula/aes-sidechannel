@@ -64,13 +64,13 @@ sbox_hex = [
 # modify following variables so they correspond to
 # the measurement setup
 # "Each sample is represented by 8 bit unsigned value (i.e., the length of the file is 370 000 bytes * 200 traces = 74 MB)"
-numberOfTraces = 230
-traceSize = 1400000
+numberOfTraces = 100
+# traceSize = 1400000
 
 # modify the following variables to speed-up the measurement
 # (this can be done later after analysing the power trace)
-offset = 0
-segmentLength = 1400000  # for the beginning the segmentLength = traceSize
+# offset = 0
+# segmentLength = 1400000  # for the beginning the segmentLength = traceSize
 
 # columns and rows variables are used as inputs
 # to the function loading the plaintext/ciphertext
@@ -94,7 +94,7 @@ rows = numberOfTraces
 # To reduce the size of the trace (e.g., to speed-up the computation process)
 # modify the offset and segmentLength inputs so the loaded parts of the
 # traces correspond to the trace segment you are using for the recovery.
-traces = myload.loadFromNPFile()
+traces = myload.loadFromNPFile(fname='../cpa/11-30-2015-again.npy')
 
 # function myin is used to load the plaintext and ciphertext
 # to the corresponding matrices.
@@ -102,7 +102,7 @@ traces = myload.loadFromNPFile()
 #   'file' - name of the file containing the plaintext or ciphertext
 #   columns - number of columns (e.g., size of the AES data block)
 #   rows - number of rows (e.g., number of measurements)
-plaintext = myin.myin('../../trace-data/11-30-2015/230_traces/hex_plaintexts_230.txt', columns, rows)
+plaintext = myin.myin('../../trace-data/11-30-2015/230_traces/hex_plaintexts_100.txt', columns, rows)
 # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
 
 ##########################
@@ -137,7 +137,8 @@ keyGuesses = keyCandidateStop - keyCandidateStart + 1
 
 
 # for every byte in the key do:
-for byte in range(byteStart, byteEnd+1):
+for byte in range(byteStart, byteStart+1): #TODO change this back to byteEnd+1
+    print 'Started analyzing key byte',byte
 
     # Create the power hypothesis matrix (dimensions:
     # rows = numberOfTraces, columns = 256).
@@ -149,6 +150,7 @@ for byte in range(byteStart, byteEnd+1):
 	#	plaintext_nth_byte.shape = (200,)
     plaintext_nth_byte = plaintext[:, byte-1]
     
+    print '\tCreating power model...'
     for k in range(keyCandidateStart, keyCandidateStop+1):
         # --> create the power hypothesis here <--
 		
@@ -160,6 +162,8 @@ for byte in range(byteStart, byteEnd+1):
 		# Use the Hamming Distance model to calculate the hypothetical power consumption of
 		#	the SBOX operation. 
 		hd_arr = hd(0, sbox_result)
+
+
 		# Add the Hamming Distance to the power hypothesis matrix
 		powerHypothesis[:,k] = hd_arr
 
@@ -167,15 +171,13 @@ for byte in range(byteStart, byteEnd+1):
     # from the power consumption hypothesis matrix powerHypothesis and the
     # measured power traces. The resulting correlation coeficients stored in
     # the matrix CC are later used to extract the correct key.
-    CC = mycorr.mycorr(powerHypothesis, traces)
+    print '\tCalculating correlation...'
+    CC = np.abs(mycorr.mycorr(powerHypothesis, traces))
     
     # --> do some operations here to find the correct byte of the key <--
     max_samples = np.max(CC, axis=1)   # index of maximum point in sample for each key
     max_key = np.argmax(max_samples)  # index of maximum key among maximumms in samples
-    print max_key
-    import matplotlib.pyplot as plt
-    plt.plot(range(len(max_samples)),max_samples)
-    plt.show()
+    print '\t',sorted([(value, i) for i,value in enumerate(max_samples)])
     print 'key' + str(max_key)
 
     # plt.plot(CC[0])
