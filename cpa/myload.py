@@ -16,8 +16,8 @@ def myload(fname, trlen, start, len, n):
     myfile.close()
     return traces
 
-def loadFromNPFile(fname='../../trace-data/11-23-2015/trace_data.npy'):
-    return np.load(fname)
+def loadFromNPFile(fname='../../trace-data/11-30-2015/230_traces/230_traces.npy'):
+    return np.load(fname)[0:230,:]
 
 def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
     print 'Reading WFMs from', infolder
@@ -31,8 +31,8 @@ def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
 
     file_count = 0
     for fyle in os.listdir(infolder):
-        print '\tReading',fyle, file_count,'/',num_traces
         if not fyle.endswith('.wfm'): continue
+        print '\tReading',fyle, file_count,'/',num_traces
         trace_values = wfm2read_fast.wfm2read(infolder+fyle)[0]
         trimmed_values = trace_values[len(trace_values)*0.4:len(trace_values)*0.75]
         #average_values = []
@@ -49,5 +49,5 @@ def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
     print 'Finished processing all WFMs. Output in',outfile
 
 if '__main__' == __name__:
-    readWFMs()
+    readWFMs(infolder='/media/usb/11-30-2015-500/',outfile='11-30-2015')
 

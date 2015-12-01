@@ -2,3 +2,4 @@ data-capture/arduino-code/.build/*
 *.o
 *.d
 *.pyc
+*.npy

@@ -64,13 +64,13 @@ sbox_hex = [
 # modify following variables so they correspond to
 # the measurement setup
 # "Each sample is represented by 8 bit unsigned value (i.e., the length of the file is 370 000 bytes * 200 traces = 74 MB)"
-numberOfTraces = 200
-traceSize = 370000
+numberOfTraces = 230
+traceSize = 1400000
 
 # modify the following variables to speed-up the measurement
 # (this can be done later after analysing the power trace)
 offset = 0
-segmentLength = 370000  # for the beginning the segmentLength = traceSize
+segmentLength = 1400000  # for the beginning the segmentLength = traceSize
 
 # columns and rows variables are used as inputs
 # to the function loading the plaintext/ciphertext
@@ -94,8 +94,7 @@ rows = numberOfTraces
 # To reduce the size of the trace (e.g., to speed-up the computation process)
 # modify the offset and segmentLength inputs so the loaded parts of the
 # traces correspond to the trace segment you are using for the recovery.
-traces = myload.myload('../traces_unknown_key/traces.bin', traceSize, offset,
-                       segmentLength, numberOfTraces)
+traces = myload.loadFromNPFile()
 
 # function myin is used to load the plaintext and ciphertext
 # to the corresponding matrices.
@@ -103,8 +102,8 @@ traces = myload.myload('../traces_unknown_key/traces.bin', traceSize, offset,
 #   'file' - name of the file containing the plaintext or ciphertext
 #   columns - number of columns (e.g., size of the AES data block)
 #   rows - number of rows (e.g., number of measurements)
-plaintext = myin.myin('../traces_unknown_key/plaintext.txt', columns, rows)
-ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
+plaintext = myin.myin('../../trace-data/11-30-2015/230_traces/hex_plaintexts_230.txt', columns, rows)
+# ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
 
 ##########################
 # EXERCISE 1 -- Plotting the power trace(s): #
@@ -173,6 +172,10 @@ for byte in range(byteStart, byteEnd+1):
     # --> do some operations here to find the correct byte of the key <--
     max_samples = np.max(CC, axis=1)   # index of maximum point in sample for each key
     max_key = np.argmax(max_samples)  # index of maximum key among maximumms in samples
+    print max_key
+    import matplotlib.pyplot as plt
+    plt.plot(range(len(max_samples)),max_samples)
+    plt.show()
     print 'key' + str(max_key)
 
     # plt.plot(CC[0])
