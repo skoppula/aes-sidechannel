@@ -16,8 +16,8 @@ def myload(fname, trlen, start, len, n):
     myfile.close()
     return traces
 
-def loadFromNPFile(fname='../../trace-data/11-30-2015/230_traces/230_traces.npy'):
-    return np.load(fname)[0:230,:]
+def loadFromNPFile(fname='../../trace-data/11-30-2015/230_traces_averaged/230_trace_averaged.npy'):
+    return np.load(fname)
 
 def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
     print 'Reading WFMs from', infolder
@@ -26,14 +26,25 @@ def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
     sys.path.append('../data-capture/process-wfms/')
     import wfm2read_fast
 
-    num_traces = sum([1 if fyle.endswith('.wfm') else 0 for fyle in os.listdir(infolder)])
+    num_traces = 100
+    start_frac, end_frac = (0.1,0.8)
 
-    file_count = 0
-    for fyle in os.listdir(infolder):
-        if not fyle.endswith('.wfm'): continue
-        print '\tReading',fyle, file_count,'/',num_traces
+    # EVIL DO NO USE!
+    # num_traces = 0
+    # for fyle in os.listdir(infolder):
+    #     if fyle.endswith('.wfm') and not (int(fyle.split('.')[0][1:]) == 0 or int(fyle.split('.')[0][1:]) > N):
+    #         num_traces += 1
+
+    # file_count = 0
+    # EVIL DO NO USE!
+    # for fyle in os.listdir(infolder):
+    for file_count in xrange(num_traces):
+        # if not fyle.endswith('.wfm'): continue
+        # if int(fyle.split('.')[0][1:]) == 0 or int(fyle.split('.')[0][1:]) > N: continue
+        fyle = 'W%d.wfm' % (file_count+1)
+        print '\tReading ', infolder+fyle, ' ', file_count+1,'/', num_traces
         trace_values = wfm2read_fast.wfm2read(infolder+fyle)[0] 
-        trimmed_values = trace_values[len(trace_values)*0.4:len(trace_values)*0.75]
+        trimmed_values = trace_values[len(trace_values)*start_frac:len(trace_values)*end_frac]
         def avg_map(arr, numSamps):
             avged_arr = []
             for i in range(len(arr)/numSamps):
@@ -51,11 +62,12 @@ def readWFMs(infolder='../../trace-data/11-23-2015/', outfile='trace_data'):
         except NameError:
             traces = np.zeros((num_traces, len(averaged_values)))
         traces[file_count, :] = averaged_values
-        file_count += 1
+        # file_count += 1
         
     np.save(outfile, traces)
     print 'Finished processing all WFMs. Output in',outfile
 
 if '__main__' == __name__:
-    readWFMs(infolder='/media/usb/11-30-2015-500/',outfile='11-30-2015')
+    # readWFMs(infolder='../../trace-data/11-30-2015/500-plaintexts-attempt-1/',outfile='11-30-2015')
+    readWFMs(infolder='/home/skoppula/11-30-2015-500-again/',outfile='11-30-2015-again')
 
