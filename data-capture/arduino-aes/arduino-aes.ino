@@ -41,13 +41,13 @@ void loop() {
     } 
     if(index == 16) {
       //print_data(data);
-      for(int i=0; i<100; i++) {
-        delay(2000);
+      for(int i=0; i<1000; i++) {
+        //delay(2000);
         cli();
         //digitalWrite(13,HIGH);
-        //Serial.print(i);
-        //Serial.print(": ");
-        //print_data(data);
+        Serial.print(i);
+        Serial.print(": ");
+        print_data(data);
         aes128_enc_single(key, data);
         //digitalWrite(13,LOW);
         //Serial.print(i);

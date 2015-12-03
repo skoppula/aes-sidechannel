@@ -16,9 +16,9 @@ void setup(){
  }
  delay(1000);
  for(int i = 0; i < lines.length; i++) {
-   System.out.print("Sent plaintext: ");
+   System.out.print("Sent plaintext serial number " + (i+1) + "\n");
    for(int j = 0; j < lines[i].length; j++) {
-     System.out.print(lines[i][j]);
+     System.out.format("%02X",(int)lines[i][j]);
      myPort.write(lines[i][j]);
    }
  System.out.println();
