@@ -13,10 +13,13 @@ import scipy as sp
 # 2014, Filip Stepanek and Jiri Bucek
 ##########################################
 
+# Function to count the number of ones in a 
+#   binary expression of a number
+def num_ones(xx): return bin(xx).count('1')
+
 # Element-wise Hamming Distance function
 def hd(x, y):
     bitwise_xor_hd  = np.bitwise_xor(x, y) 
-    def num_ones(xx): return bin(xx).count('1')
     return map(num_ones, bitwise_xor_hd)	
 
 # declaration of the SBOX (might be useful to calculate the power hypothesis)
@@ -153,19 +156,25 @@ for byte in range(byteStart, byteStart+1): #TODO change this back to byteEnd+1
     print '\tCreating power model...'
     for k in range(keyCandidateStart, keyCandidateStop+1):
         # --> create the power hypothesis here <--
-		
-		# XOR the plaintext byte with key byte and put the result through the S-BOX
-		xored_plaintxt_key_bytes = np.bitwise_xor(plaintext_nth_byte.astype(int), k) 
-		def sbox_func(b): return sbox_hex[b]
-		sbox_result = map(sbox_func, xored_plaintxt_key_bytes)
+        	
+        # XOR the plaintext byte with key byte and put the result through the S-BOX
+        xored_plaintxt_key_bytes = np.bitwise_xor(plaintext_nth_byte.astype(int), k) 
+        def sbox_func(b): return sbox_hex[b]
+        sbox_result = map(sbox_func, xored_plaintxt_key_bytes)
+        
+        
+        # Use the Hamming Distance model to calculate the hypothetical power consumption of
+        #	the SBOX operation. 
+        hd_arr = hd(0, sbox_result)
+        
+        hw_arr = num_ones(xored_plaintxt_key_bytes)
 
-		# Use the Hamming Distance model to calculate the hypothetical power consumption of
-		#	the SBOX operation. 
-		hd_arr = hd(0, sbox_result)
+        # Use the Hamming Weight model to calculate the hypothetical power consumption
+        #   of the Add Round Keys operation
+        hw_arr = num_ones(xored_plaintxt_key_bytes)
 
-
-		# Add the Hamming Distance to the power hypothesis matrix
-		powerHypothesis[:,k] = hd_arr
+		# Add this to the power hypothesis matrix
+        powerHypothesis[:,k] = hw_arr
 
     # function mycorr returns the correlation coeficients matrix calculated
     # from the power consumption hypothesis matrix powerHypothesis and the
