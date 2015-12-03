@@ -1,12 +1,18 @@
 import serial
 import time
-ser = serial.Serial('/dev/cu.usbmodem1411')
-print('Port in use is ' + ser.name)
+import sys
 
-numTraces = 500
+port = sys.argv[1]
+print 'Using port', port
 
-for i in range(0, numTraces):
-    ser.write(b"R")
-    time.sleep(1)
+with serial.Serial(port) as ser:
+    numTraces = 500
 
-ser.close()
+    for i in range(0, numTraces):
+        ser.write(b"r")
+        print 'Sent run command!'
+        time.sleep(1)
+        numBytesToRead = ser.inWaiting()
+        if numBytesToRead > 0:
+            print ser.read(numBytesToRead)
+
