@@ -64,7 +64,7 @@ sbox_hex = [
 # modify following variables so they correspond to
 # the measurement setup
 # "Each sample is represented by 8 bit unsigned value (i.e., the length of the file is 370 000 bytes * 200 traces = 74 MB)"
-numberOfTraces = 100
+numberOfTraces = 115
 # traceSize = 1400000
 
 # modify the following variables to speed-up the measurement
@@ -94,7 +94,7 @@ rows = numberOfTraces
 # To reduce the size of the trace (e.g., to speed-up the computation process)
 # modify the offset and segmentLength inputs so the loaded parts of the
 # traces correspond to the trace segment you are using for the recovery.
-traces = myload.loadFromNPFile(fname='../cpa/11-30-2015-again.npy')
+traces = myload.loadFromNPFile(fname='./11-30-2015-attempt5-only288-first159.npy')
 
 # function myin is used to load the plaintext and ciphertext
 # to the corresponding matrices.
@@ -102,7 +102,7 @@ traces = myload.loadFromNPFile(fname='../cpa/11-30-2015-again.npy')
 #   'file' - name of the file containing the plaintext or ciphertext
 #   columns - number of columns (e.g., size of the AES data block)
 #   rows - number of rows (e.g., number of measurements)
-plaintext = myin.myin('../../trace-data/11-30-2015/230_traces/hex_plaintexts_100.txt', columns, rows)
+plaintext = myin.myin('./hex_plaintexts_288_first159.txt', columns, rows)
 # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
 
 ##########################
