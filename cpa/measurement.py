@@ -97,7 +97,7 @@ rows = numberOfTraces
 # To reduce the size of the trace (e.g., to speed-up the computation process)
 # modify the offset and segmentLength inputs so the loaded parts of the
 # traces correspond to the trace segment you are using for the recovery.
-traces = myload.loadFromNPFile(fname='./11-30-2015-attempt5-only288-first159.npy')
+traces = myload.loadFromNPFile(fname='./12-02-21-28.npy')
 
 # function myin is used to load the plaintext and ciphertext
 # to the corresponding matrices.
@@ -105,7 +105,7 @@ traces = myload.loadFromNPFile(fname='./11-30-2015-attempt5-only288-first159.npy
 #   'file' - name of the file containing the plaintext or ciphertext
 #   columns - number of columns (e.g., size of the AES data block)
 #   rows - number of rows (e.g., number of measurements)
-plaintext = myin.myin('./hex_plaintexts_288_first159.txt', columns, rows)
+plaintext = myin.myin('./hex_pl', columns, rows)
 # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
 
 ##########################
