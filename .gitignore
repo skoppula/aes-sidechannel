@@ -3,3 +3,4 @@ data-capture/arduino-code/.build/*
 *.d
 *.pyc
 *.npy
+*.swp
