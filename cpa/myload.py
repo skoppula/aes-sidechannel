@@ -22,48 +22,22 @@ def filter_plaintexts(lst):
 def readWFMs(infolder, outfile):
     print 'Reading WFMs from', infolder
 
-    start_frac, end_frac = (0.1,0.8)
-
     all_files =  os.listdir(infolder)
-    num_traces = 159
-    files_included = []
-    for file_count in xrange(1,num_traces):
-        for fyle in all_files:
-            if 'W' + str(file_count) + '-'  in fyle:
-                break
-        if fyle.split('-')[1].startswith('288'):
-            files_included.append(file_count)
-    filter_plaintexts(files_included)
-
-    z = 0
-    for file_count in xrange(1,num_traces):
-        for fyle in all_files:
-            if 'W' + str(file_count) + '-'  in fyle:
-                break
-        if not fyle.split('-')[1].startswith('288'): continue
-
+    num_traces = len(all_files) 
+    for file_count in xrange(1,num_traces+1):
+       
+        fyle = 'W' + str(file_count) + '.wfm'
         print '\tReading ', infolder+fyle, ' ', file_count,'/', num_traces
         trace_values = wfm2read_fast.wfm2read(infolder+fyle)[0] 
-        trimmed_values = trace_values[len(trace_values)*start_frac:len(trace_values)*end_frac]
-        def avg_map(arr, numSamps):
-            avged_arr = []
-            for i in range(len(arr)/numSamps):
-                nextClump = arr[i*numSamps:i*numSamps+numSamps]
-                nextValue = sum(nextClump)/numSamps
-                avged_arr.append(nextValue)
-            return avged_arr
-
-        averaged_values = avg_map(trimmed_values, 1)
         try:
             traces
         except NameError:
-            traces = np.zeros((len(files_included), len(averaged_values)))
-        traces[z, :] = averaged_values
-        z += 1
+            traces = np.zeros((num_traces, len(trace_values)))
+        traces[file_count-1, :] = trace_values
         
     np.save(outfile, traces)
     print 'Finished processing all WFMs. Output in',outfile
 
 if '__main__' == __name__:
-    readWFMs(infolder='/media/usb/11-30-2015-500-attempt5/',outfile='11-30-2015-attempt5-only288-first159')
+    readWFMs(infolder='/Users/hol/Desktop/2015-12-2-21-28/',outfile='12-02-21-28')
 
