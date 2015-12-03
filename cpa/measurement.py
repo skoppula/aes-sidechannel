@@ -22,6 +22,10 @@ def hd(x, y):
     bitwise_xor_hd  = np.bitwise_xor(x, y) 
     return map(num_ones, bitwise_xor_hd)	
 
+def zero_to_one(x, y):
+    return np.bitwise_and(np.invert(x), y)
+
+
 # declaration of the SBOX (might be useful to calculate the power hypothesis)
 sbox_hex = [
    0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5,
@@ -67,19 +71,12 @@ sbox_hex = [
 # modify following variables so they correspond to
 # the measurement setup
 # "Each sample is represented by 8 bit unsigned value (i.e., the length of the file is 370 000 bytes * 200 traces = 74 MB)"
-numberOfTraces = 115
 # traceSize = 1400000
 
 # modify the following variables to speed-up the measurement
 # (this can be done later after analysing the power trace)
 # offset = 0
 # segmentLength = 1400000  # for the beginning the segmentLength = traceSize
-
-# columns and rows variables are used as inputs
-# to the function loading the plaintext/ciphertext
-columns = 16
-rows = numberOfTraces
-
 #########################
 # Calling the functions #
 #########################
@@ -97,7 +94,16 @@ rows = numberOfTraces
 # To reduce the size of the trace (e.g., to speed-up the computation process)
 # modify the offset and segmentLength inputs so the loaded parts of the
 # traces correspond to the trace segment you are using for the recovery.
-traces = myload.loadFromNPFile(fname='./12-02-21-28.npy')
+traces = myload.loadFromNPFile(fname='./12-03-0-19.npy')
+numberOfTraces = traces.shape[0]
+print traces.shape
+
+
+# columns and rows variables are used as inputs
+# to the function loading the plaintext/ciphertext
+columns = 16
+rows = numberOfTraces
+
 
 # function myin is used to load the plaintext and ciphertext
 # to the corresponding matrices.
@@ -105,7 +111,9 @@ traces = myload.loadFromNPFile(fname='./12-02-21-28.npy')
 #   'file' - name of the file containing the plaintext or ciphertext
 #   columns - number of columns (e.g., size of the AES data block)
 #   rows - number of rows (e.g., number of measurements)
-plaintext = myin.myin('./hex_pl', columns, rows)
+plaintext_long = myin.myin('./plaintexts-1000.txt', columns, rows)
+plaintext = plaintext_long[0:numberOfTraces]
+print plaintext.shape
 # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
 
 ##########################
@@ -119,7 +127,7 @@ plaintext = myin.myin('./hex_pl', columns, rows)
 # --> create the plots here <--
 # print traces
 # print traces[1]
-plt.plot(traces[0])
+# plt.plot(traces[0])
 # plt.show()
 
 ###############################
@@ -138,10 +146,10 @@ keyCandidateStart = 0
 keyCandidateStop = 255
 keyGuesses = keyCandidateStop - keyCandidateStart + 1
 
-
+CC = [None]*16
 # for every byte in the key do:
-for byte in range(byteStart, byteStart+1): #TODO change this back to byteEnd+1
-    print 'Started analyzing key byte',byte
+for byte in range(byteStart, byteEnd+1):
+    print 'Started analyzing key byte',(byte-1)
 
     # Create the power hypothesis matrix (dimensions:
     # rows = numberOfTraces, columns = 256).
@@ -154,7 +162,7 @@ for byte in range(byteStart, byteStart+1): #TODO change this back to byteEnd+1
     plaintext_nth_byte = plaintext[:, byte-1]
     
     print '\tCreating power model...'
-    for k in range(keyCandidateStart, keyCandidateStop+1):
+    for k in range(keyCandidateStart, keyCandidateStop+1): # keyCandidateStop+1):
         # --> create the power hypothesis here <--
         	
         # XOR the plaintext byte with key byte and put the result through the S-BOX
@@ -167,13 +175,37 @@ for byte in range(byteStart, byteStart+1): #TODO change this back to byteEnd+1
         #	the SBOX operation. 
         hd_arr = hd(0, sbox_result)
         
-        hw_arr = num_ones(xored_plaintxt_key_bytes)
-
         # Use the Hamming Weight model to calculate the hypothetical power consumption
         #   of the Add Round Keys operation
-        hw_arr = num_ones(xored_plaintxt_key_bytes)
+        # hw_arr = xored_plaintxt_key_bytes
+        hw_arr = map(num_ones, xored_plaintxt_key_bytes)
 
-		# Add this to the power hypothesis matrix
+	    # Use the number of 0->1 transitions to calculate hypothetical pc 
+        zo_arr = map(num_ones, zero_to_one(k, xored_plaintxt_key_bytes))
+
+        # IlyaKizhvatov
+        # ik_arr = np.ones(len(hw_arr))
+        # ptxt_n = plaintext_nth_byte.astype(int)
+        # ptxt_np = plaintext[:,byte].astype(int) 
+        # ints = map(int,np.bitwise_xor(np.bitwise_xor(ptxt_n,k), np.bitwise_xor(ptxt_np,14)))
+        # ik_arr = map(num_ones, ints)
+        # for key in range(0,256):
+        #     ik_arr = np.bitwise_xor(np.bitwise_xor(ptxt_n,k), np.bitwise_xor(ptxt_np,key))
+        #     
+        #     # Add this to the power hypothesis matrix
+        #     ints = map(int, ik_arr)
+        #     powerHypothesis[:,k] = map(num_ones, ints)
+
+        #     print '\tCalculating correlation...'
+        #     CC[byte-1] = np.abs(mycorr.mycorr(powerHypothesis, traces))
+    
+        #     # --> do some operations here to find the correct byte of the key <--
+        #     max_samples = np.max(CC[byte-1], axis=1)   # index of maximum point in sample for each key
+        #     max_key = np.argmax(max_samples)  # index of maximum key among maximumms in samples
+        #     max_10_keys = np.argsort(max_samples)[::-1][:10]
+        #     print 'max keys: ' + str(max_10_keys)
+            #
+        # Add this to the power hypothesis matrix
         powerHypothesis[:,k] = hw_arr
 
     # function mycorr returns the correlation coeficients matrix calculated
@@ -181,17 +213,44 @@ for byte in range(byteStart, byteStart+1): #TODO change this back to byteEnd+1
     # measured power traces. The resulting correlation coeficients stored in
     # the matrix CC are later used to extract the correct key.
     print '\tCalculating correlation...'
-    CC = np.abs(mycorr.mycorr(powerHypothesis, traces))
+    CC[byte-1] = np.abs(mycorr.mycorr(powerHypothesis, traces))
     
     # --> do some operations here to find the correct byte of the key <--
-    max_samples = np.max(CC, axis=1)   # index of maximum point in sample for each key
+    max_samples = np.max(CC[byte-1], axis=1)   # index of maximum point in sample for each key
     max_key = np.argmax(max_samples)  # index of maximum key among maximumms in samples
-    print '\t',sorted([(value, i) for i,value in enumerate(max_samples)])
-    print 'key' + str(max_key)
+    max_10_keys = np.argsort(max_samples)[::-1][:10]
+    print 'max keys: ' + str(max_10_keys)
+    # print '\t',sorted([(value, i) for i,value in enumerate(max_samples)])
 
     # plt.plot(CC[0])
     # plt.plot(CC[1])
     # plt.plot(CC[2])
     # plt.show()
 
+def plot_cc_with_trace(byte, k2):
+    plt.subplot(2, 1, 1)
+    plt.plot(CC[byte][byte,:])
+    plt.plot(CC[byte][k2,:])
+    for line in range(0,16):
+        x = 50+37+(389-37)*line/15.0
+        plt.text(x-5, 4.15, '%d' % line)
+        plt.axvline(x, color='k', linestyle='dotted')
+    plt.subplot(2, 1, 2)
+    #plt.plot(np.max(CC[byte-1], axis=1), 'r')
+    for i in range(0,20):
+        plt.plot(traces[i])
+    for line in range(0,16):
+        x = 50+37+(389-37)*line/15.0
+        plt.axvline(x, color='k', linestyle='dotted')
+    plt.show()
+
+# first bytes of plaintxt
+# first_bytes = []
+# for byte in range(0,100):
+#     first_bytes.append(plaintext[0, byte])
+# # Hamming weights each thing the array
+# def hw_plaintxt(arr):
+#     return map(num_ones, arr)
+# print first_bytes
+# print hw_plaintxt(first_bytes)
    

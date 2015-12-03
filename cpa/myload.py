@@ -12,20 +12,21 @@ def readWFMs(infolder, outfile):
     print 'Reading WFMs from', infolder
 
     all_files =  os.listdir(infolder)
-    num_traces = len(all_files) 
+    num_traces = 900
     for file_count in xrange(1,num_traces+1):
         fyle = 'W' + str(file_count) + '.wfm'
         print '\tReading ', infolder+fyle, ' ', file_count,'/', num_traces
         trace_values = wfm2read_fast.wfm2read(infolder+fyle)[0] 
+        traces_trimmed = trace_values
         try:
             traces
         except NameError:
-            traces = np.zeros((num_traces, len(trace_values)))
-        traces[file_count-1, :] = trace_values
+            traces = np.zeros((num_traces, len(traces_trimmed)))
+        traces[file_count-1, :] = traces_trimmed
         
     np.save(outfile, traces)
     print 'Finished processing all WFMs. Output in',outfile
 
 if '__main__' == __name__:
-    readWFMs(infolder='/Users/hol/Desktop/2015-12-2-21-28/',outfile='12-02-21-28')
+    readWFMs(infolder='/Users/hol/Desktop/2015-12-3-0-19/',outfile='12-03-0-19')
 

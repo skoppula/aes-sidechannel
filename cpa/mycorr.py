@@ -16,8 +16,6 @@ def mycorr(x, y):
     y_std = np.std(y, axis=0)
     assert x_std.any() != 0, 'x std is 0'
     assert y_std.any() !=0, 'y std is 0'
-    print 'x_std: ' + str(x_std)
-    print 'y_std: ' + str(y_std)
     x = x/x_std
     y = y/y_std
 
