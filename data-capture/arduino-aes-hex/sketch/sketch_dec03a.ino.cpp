@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#line 1
+#line 1 "/home/skoppula/Desktop/sketch_dec03a/sketch_dec03a.ino"
 // Uses the AESLib encryption library for Arduino
 // https://github.com/DavyLandman/AESLib
 
@@ -9,6 +12,10 @@ byte index = 0;   // Index into array; where to store the character
 uint8_t key[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}; //16 bytes of Key
 char temp[4];
 
+void setup();
+void print_data(unsigned char data[]);
+void loop();
+#line 12
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -41,29 +48,19 @@ void loop() {
     } 
     if(index == 16) {
       //print_data(data);
-      for(int i=0; i<5; i++) {
-        
-        for(int j=0; j<9; j++) {
-          delay(2000);
-          //digitalWrite(13,HIGH);
-          //Serial.print(i);
-          //Serial.print(": ");
-          //print_data(data);
-          cli();
-          aes128_enc_single(key, data);
-          aes128_dec_single(key,data);
-          sei();
-          //digitalWrite(13,LOW);
-          //Serial.print(i);
-          //Serial.print(":");
-          //print_data(data);
-        }
-        delay(2000);
-        //Serial.print(i);
-        //Serial.print(": ");
-        //print_data(data);
+      for(int i=0; i<1000; i++) {
+        //delay(2000);
         cli();
+        //digitalWrite(13,HIGH);
+        Serial.print(i);
+        Serial.print(": ");
+        print_data(data);
         aes128_enc_single(key, data);
+        //digitalWrite(13,LOW);
+        //Serial.print(i);
+        //Serial.print(":");
+        //print_data(data);
+        //aes128_dec_single(key,data);
         //print_data(data);
         index = 0;
         sei();
@@ -71,5 +68,6 @@ void loop() {
     }
   }
 }
+
 
 

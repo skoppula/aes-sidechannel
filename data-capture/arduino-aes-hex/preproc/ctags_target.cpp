@@ -1,3 +1,4 @@
+#line 1 "/home/skoppula/Desktop/sketch_dec03a/sketch_dec03a.ino"
 // Uses the AESLib encryption library for Arduino
 // https://github.com/DavyLandman/AESLib
 
@@ -41,29 +42,19 @@ void loop() {
     } 
     if(index == 16) {
       //print_data(data);
-      for(int i=0; i<5; i++) {
-        
-        for(int j=0; j<9; j++) {
-          delay(2000);
-          //digitalWrite(13,HIGH);
-          //Serial.print(i);
-          //Serial.print(": ");
-          //print_data(data);
-          cli();
-          aes128_enc_single(key, data);
-          aes128_dec_single(key,data);
-          sei();
-          //digitalWrite(13,LOW);
-          //Serial.print(i);
-          //Serial.print(":");
-          //print_data(data);
-        }
-        delay(2000);
-        //Serial.print(i);
-        //Serial.print(": ");
-        //print_data(data);
+      for(int i=0; i<1000; i++) {
+        //delay(2000);
         cli();
+        //digitalWrite(13,HIGH);
+        Serial.print(i);
+        Serial.print(": ");
+        print_data(data);
         aes128_enc_single(key, data);
+        //digitalWrite(13,LOW);
+        //Serial.print(i);
+        //Serial.print(":");
+        //print_data(data);
+        //aes128_dec_single(key,data);
         //print_data(data);
         index = 0;
         sei();
@@ -71,5 +62,6 @@ void loop() {
     }
   }
 }
+
 
 

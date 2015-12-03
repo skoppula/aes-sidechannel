@@ -41,46 +41,71 @@ end
 fopen(g);
 
 %%
+
+% Hack to reset acquisition count on scope to zero
+fprintf(g, 'ACQUIRE:MODE SAMPLE');
 fprintf(g, 'ACQ:STATE RUN');
+fprintf(g, 'ACQUIRE:MODE AVERAGE');
+
+fprintf(g, 'ACQUIRE:NUMAVG 10');  
+
 fprintf(g, 'ACQUIRE:NUMACQ?');
 num_acqs = fscanf(g, '%d') 
 
 prev_acqs = num_acqs;
 orig_acqs = num_acqs;
-curr_acqs = 1;
+curr_acqs = 0;
 
-while(curr_acqs < orig_acqs + 500)
+%%
+date_time = clock
+dirname = strcat(' "C:\858\', int2str(date_time(1)), '-', int2str(date_time(2)), '-', int2str(date_time(3)), '-', int2str(date_time(4)), '-', int2str(date_time(5)));
+%%
+cmd1 = strcat('FILESystem:MKDir', ' ', dirname, '"')
+fprintf(g, cmd1);
+%%
+
+while(curr_acqs < orig_acqs + 1010)
     fprintf(g, 'ACQUIRE:NUMACQ?');
     curr_acqs = fscanf(g,'%d');
 
+    % fprintf(g,'MEASUREMENT:IMMED:SOURCE CH2')
+    % fprintf(g,'MEASUREMENT:IMMED:TYPE PWIdth?')
+    % fprintf(g,'MEASUREMENT:MEAS1:VALUE?')
+    % poswid = strsplit(fscanf(g),'.');  
+    
     if(curr_acqs > prev_acqs)
-        disp('Im here');
-        %%
-        fprintf(g,'DATA:SOURCE CH1');
-        fprintf(g,'DATA:ENCdg ASCII');
-        fprintf(g,'WFMO:BYT_N 4');
-        fprintf(g,'DATA:START 1');
-        fprintf(g,'DATA:STOP 10');
+        if mod(curr_acqs, 10) == 0
+            %%
+            % fprintf(g,'DATA:SOURCE CH1');
+            % fprintf(g,'DATA:ENCdg ASCII');
+            % fprintf(g,'WFMO:BYT_N 4');
+            % fprintf(g,'DATA:START 1');
+            % fprintf(g,'DATA:STOP 10');
 
-        %%
+            %%
 
-        fprintf(g, 'WFMOUTPRE?');
-        source = fscanf(g)
-        %%
-        fprintf(g, 'CURVE?');
-        source2 = fscanf(g)
-        %%
-        fprintf(g, 'DATA?');
-        source3 = fscanf(g)
-        %%
-        filename = strcat('"C:\858\11-23-2015\W', int2str(curr_acqs), '.wfm"');
-        fprintf(g, strcat('SAV:WAVE CH1,',filename));
-        
-        prev_acqs = curr_acqs
+            % fprintf(g, 'WFMOUTPRE?');
+            % source = fscanf(g)
+            %%
+            % fprintf(g, 'CURVE?');
+            % source2 = fscanf(g)
+            %%
+            % fprintf(g, 'DATA?');
+            % source3 = fscanf(g)
+            %%
+            curr_acqs
+            filename = strcat(dirname, '\W', int2str(curr_acqs/10), '.wfm"');
+            filename
+            cmd2=strcat('SAV:WAVE CH1,',filename)
+            fprintf(g, cmd2);  
+        end
+        prev_acqs = curr_acqs;
     end
-    curr_acqs
 end
 %%
+
+%%
+
 
 fclose(g);
 delete(g);
