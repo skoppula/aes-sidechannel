@@ -11,7 +11,7 @@ with serial.Serial(port) as ser:
     for i in range(0, numTraces):
         ser.write(b"r")
         print 'Sent run command!'
-        time.sleep(1)
+        time.sleep(60)
         numBytesToRead = ser.inWaiting()
         if numBytesToRead > 0:
             print ser.read(numBytesToRead)

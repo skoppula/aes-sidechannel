@@ -34,9 +34,9 @@ bool run_10_aes(){
   for(int j=0; j<9; j++) {
     delay(2000);
     //digitalWrite(13,HIGH);
-    //Serial.print(i);
-    //Serial.print(": ");
-    //print_data(data);
+    Serial.print(j);
+    Serial.print(": ");
+    print_data(data);
     cli();
     aes128_enc_single(key, data);
     aes128_dec_single(key,data);
@@ -48,9 +48,9 @@ bool run_10_aes(){
   }
   
   delay(2000);
-  //Serial.print(i);
-  //Serial.print(": ");
-  //print_data(data);
+  Serial.print(10);
+  Serial.print(": ");
+  print_data(data);
   cli();
   aes128_enc_single(key, data);
   //print_data(data);
@@ -68,4 +68,5 @@ void loop() {
       }
   }
 }
+
 
