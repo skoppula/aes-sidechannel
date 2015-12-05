@@ -1,0 +1,107 @@
+\documentclass[journal]{ieee_style}
+
+\usepackage{amsfonts}
+\usepackage{minted}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{latexsym}
+\usepackage{caption}
+\usepackage{mathtools}
+\usepackage{url}
+\usepackage{array}
+
+
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+
+
+\begin{document}
+\title{Power-Based Side-Channel Attack for AES Key Extraction on a ATMega328 controller}
+
+\author{Utsav Banerjee,
+        Lisa Ho,
+        and Skanda Koppula% <-this % stops a space
+\thanks{All authors are with the Department
+of Electrical and Computer Engineering, Massachusetts Institute of Technology, Cambridge,
+MA, 02139 USA}% <-this % stops a space
+\thanks{To contact the authors: \tt{utsav@mit.edu}, \tt{lisaho@mit.edu}, and \tt{skandak@mit.edu}}% <-this % stops a space
+\thanks{Manuscript completed for 6.858 Computer Systems Security; completed on December 5, 2015}}
+
+
+\markboth{6.858 Final Project Report - Fall 2015}%
+{Power-Based Side-Channel Attack for AES Key Extraction on the ATMega328 controller}
+\maketitle
+
+\begin{abstract}
+    We demonstrate extraction of a private-key from Flash program memory on the ATMega328 microcontroller (the controller used on the popular Arduino Uno/Genuino board). We loaded a standard AVR-architecture AES implementation onto the chip and ran this implementation to encrypt 500 randomly chosen plaintexts. By carefully measuring the chips power consumption, we were able to correlate the consumed power with the input plaintexts and key values that might be used to encrypt each AES block, and back-derive the hard-coded key used for encryption. We describe here our test infrastructure for automated power trace collection, an overview of our correlation attack, sanitization of the traces and interesting stumbling blocks encountered during data collection and analysis, and the results of our attack.
+\end{abstract}
+
+\begin{IEEEkeywords}
+AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
+\end{IEEEkeywords}
+
+\section{Introduction}
+% Explain what side-channel attacks are, why they're important, and past attacks
+% Overview the structure of the paper
+
+\section{Preliminaries}
+\subsection{Controller Specifications}
+% Discuss AESLib, ATMel, AVR architecture, possibly Flash memory model and vector of attack, give some specs
+\subsection{Correlation Power Analysis}
+% Briefly explain how CPA works
+
+\section{Protocols and Procedure}
+
+\subsection{Data Collection Infrastructure}
+\begin{itemize}[-]
+\item Discuss trigger with memoery mapped register with assembly sbi instruction, schematic for collection, oscilloscope model/programmer model GPIB with assembly sbi instruction
+\item Faraday shield metal box
+\item fast frames
+\end{itemize}
+
+\subsection{Implementation of CPA and Power Model}
+- discuss different power models we've tried, faster correlation
+
+\subsection{Instructive Problems Encountered (and Panaceas)}
+
+\begin{itemize}[-]
+\item remove difAmp -> increase resistor value -> increase bandwidth?//used to measure current before
+\item serial print adds noise
+\item averaging to solve dc shift
+\item interrupt introduces clock jitter
+\item adding nops to prevent asyncronous / delay
+\item original hypothesis about sbox:  SBox bad for correlation? the flash architecture -> bit block bit block bar
+\item FUNDAMENTALLY A PROBLEM WITH DATA
+\end{itemize}
+\subsection{Overview of Source Code}
+- overview everything in dropbox
+
+\section{Results}
+- go over the graphs, and timing/accuracy results of tests
+
+%\begin{figure}[!t]
+%\centering
+%\includegraphics[width=2.5in]{myfigure}
+% where an .eps filename suffix will be assumed under latex, 
+% and a .pdf suffix will be assumed for pdflatex; or what has been declared
+% via \DeclareGraphicsExtensions.
+%\caption{Simulation results for the network.}
+%\label{fig_sim}
+%\end{figure}
+
+
+\section*{Acknowledgment}
+The authors would like to extend our deepest thanks to Chiraag Juvekar for the time he spent with us aiding our debugging of data collection and analysis problems. 
+
+
+\begin{thebibliography}{1}
+
+\bibitem{CPA guide}
+H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
+  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+
+\end{thebibliography}
+\end{document}
+
+
