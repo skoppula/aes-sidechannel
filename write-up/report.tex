@@ -10,6 +10,7 @@
 \usepackage{mathtools}
 \usepackage{url}
 \usepackage{array}
+\usepackage{hyperref}
 
 
 % correct bad hyphenation here
@@ -28,7 +29,6 @@ MA, 02139 USA}% <-this % stops a space
 \thanks{To contact the authors: \texttt{utsav@mit.edu}, \texttt{lisaho@mit.edu}, and \texttt{skandak@mit.edu}}% <-this % stops a space
 \thanks{Manuscript completed for 6.858 Computer Systems Security; completed on December 5, 2015}}
 
-
 \markboth{6.858 Final Project Report - Fall 2015}%
 {Power-Based Side-Channel Attack for AES Key Extraction on the ATMega328 controller}
 \maketitle
@@ -42,7 +42,7 @@ AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
 \end{IEEEkeywords}
 
 \section{Introduction}
-The recent wave of concern about data privacy has brought attention to the necessity for more broadly adopted encryption algorithms. One of the more popular symmetric-key algorithms, Advanced Encryption Standard (AES), has been the U.S. government standard since 2002 (ISO/IEC 18033-3), and used in a multitude of applications: SSL/TLS protocols \cite{ssl}, Kerberos \cite{kerberos}, and demonstrably secure embedded devices \cite{embedded}. This last application in particular, embedded devices, has seen much growth in recent years, given the advantages of computation on smaller embedded devices: low power, lower system latency, and generally smaller device size.
+Recent concerns about data privacy has brought attention to the necessity of encryption algorithms. One of the more popular symmetric-key algorithms, Advanced Encryption Standard (AES), has been the U.S. government standard since 2002 (ISO/IEC 18033-3), and is used in a multitude of applications: SSL/TLS protocols \cite{ssl}, Kerberos \cite{kerberos}, and demonstrably secure embedded devices \cite{embedded}. This last application in particular, embedded devices, has seen much growth in recent years, given the advantages of computation on smaller embedded devices: low power, lower system latency, and generally smaller device size.
 
 Small hardware implementations, however, are notoriously vulnerable to a range of side-channel attacks \cite{smalldevice}. Timing, electromagnetic radiation, and power consumption are just three commonly exploited vectors used to leak information about ongoing computations and data on the chip. Knowing that a device architecture is amiable to side-channel exploitation is useful in deciding whether to execute unprotected sensitive computations or store data on devices with similar memory and processor characteristics.
 
@@ -52,23 +52,34 @@ In section two, we review for the read the theoretical ideas underpinning our at
 
 \section{Preliminaries}
 \subsection{Controller Specifications}
-The ATMega328 family of chips is an 8-bit microcontroller series with 32 KB of NAND-type flash and 2KB of SRAM. The controller runs off a 16 MHz external clock on the Arduino board. Typical power consumption of the chip ranges from 7 to 12V, with a 20mA current draw, depending on the peripheral and I/O pin usage \cite{atmeldatasheet}. Out attack exploits the NAND-type flash memory architecture that consumes marginally more power when accessing addresses that store bits with lower Hamming weight \footnote{NAND-flash works by charging and recharge the memory cell line} \cite{nandflash}.
+The ATMega328 family of chips is an 8-bit microcontroller series with 32 KB of NAND-type flash and 2KB of SRAM. The controller runs off a 16 MHz external clock on the Arduino board. Typical power consumption of the chip ranges from 7 to 12V, with a 20mA current draw, depending on the peripheral and I/O pin usage \cite{atmeldatasheet}. Out attack exploits the NAND-type flash memory architecture that consumes marginally more power when accessing addresses that store value-zero (discharge) bits \footnote{In a highly simplified power consumption model, NAND-flash charges a central power line connected to a series of memory cells. Depending on the value stored in the accessed memory cell, the line is discharged or not. Thus, line requires data-dependent recharging.} \cite{nandflash}.
 
 The encryption program running on our ATMega328 uses an Arduino-specific port of the \texttt{avr-crypto-lib} by Davy Landman and Bochum Hackerspace \cite{AESLib} \cite{daslabor}. \texttt{AESLib} is one of the more widely-used AES implementations for Arduino, and includes support for ECB and CBC-modes of AES. Our team decided that ECB-mode would be more amiable to a power correlation attack, and correspondingly chose to exploit the library's AES-ECB implementation. We discuss ECB in further depth in section 3.D.
 
-% Discuss AESLib, ATMel, AVR architecture, possibly Flash memory model and vector of attack, give some specs
 \subsection{Correlation Power Analysis}
 % Briefly explain how CPA works
 % sbox, AES is a block cipher that encrypts blocks of plaintext in a number 
 
 \section{Protocols and Procedure}
-
 \subsection{Data Collection Infrastructure}
-\begin{itemize}[-]
-    \item Discuss trigger with memoery mapped register with assembly sbi instruction, schematic for collection, oscilloscope model/programmer model GPIB with assembly sbi instruction. 
-\item Faraday shield metal box
-\item fast frames
-\end{itemize}
+A central piece of our work was developing the serial-connection based data collection framework to feed plaintexts for encryption to the Arduino, and read the resulting power trace from the oscilloscope. An outline is given in Figure 1.
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{Experiment_Setup}
+\caption{The oscilloscope probes voltages on the chip's power line, starting automated power trace on a trigger that signals the start of AES}
+\label{fig_sim}
+\end{figure}
+
+We needed a subset of the power trace that correlated strongly with the input plaintext and key. Specifically, we were interested in finding the portion of the trace that corresponded to the \texttt{xor(plaintext,key)} operation, and the the SBOX permutation taken over the \texttt{xor} result. In order to automate slicing to this part of the trace, we modified the \texttt{AESLib} SBOX assembly code to insert a flag a memory-mapped register that pulled up pin 13. Our oscilloscope triggered on this output, and automatically captured the part of the trace immediately after the pin 13 rising edge. 
+
+Central to our collection was a Tektronix 5054B computing oscilloscope that collected samples at 4GHz with internal memory bank of at most 16 million points. The sampling rate limited the resolution of traces that we were able to capture; we originally thought this physical cap on data quality was causing correlation issues we ran into, until we discovered arbitrary DC shifts in the traces. We discuss this challenge in more detail in Section 3.C. We used the oscilloscope's GPIB query interface to automate configuration and downloading of traces.
+
+In the final iteration of our system, we have a orchestrating computer $C$ send plaintexts to the Arduino for encryption every 2 seconds over the Arduino's serial port. The pin 13 trigger resulting in a oscilloscope trace capture, which was sent back to $C$. 
+
+More recently, we have been attempting to use the Tektronix $Fast Frames$ feature to take capture batches of 2,500-point traces at once, and use one memory-read, GPIB-write operation to transfer these traces to the computer. This would allow us much faster trace measurement, which is currently bottlenecked by the GPIB-write operation. As we will discuss in Section 4, the number of key bytes we can recover is directly correlated with the number of plaintexts we can capture and average.
+
+Photos of our collection framework can be found at \texttt{\url{https://www.dropbox.com/sh/usialgelvfqlsdr/AACvqOHKEWoumWNYi2WRIebCa?dl=0}}. Of perhaps small interest is the grounded aluminum food box encapsulating the ATMega328 setup, which reduced the EM noise and interference which we noticed in our power traces.
 
 \subsection{Implementation of CPA and Power Model}
 - discuss different power models we've tried, faster correlation
@@ -97,20 +108,13 @@ We address concerns and discuss the drawbacks for our chosen method of attack:
 - overview everything in dropbox
 
 \section{Results}
+2.5 hours for 500 plaintexts
+5 minutes to process
 
-%\begin{figure}[!t]
-%\centering
-%\includegraphics[width=2.5in]{myfigure}
-% where an .eps filename suffix will be assumed under latex, 
-% and a .pdf suffix will be assumed for pdflatex; or what has been declared
-% via \DeclareGraphicsExtensions.
-%\caption{Simulation results for the network.}
-%\label{fig_sim}
-%\end{figure}
-
+Most of our data and results can be found at \texttt{\url{https://www.dropbox.com/sh/07xni6s4tu4klme/AABnrBK-QZCVO1tMK4GFeQ5ta?dl=0}}.
 
 \section*{Acknowledgment}
-The authors would like to extend our deepest thanks to Chiraag Juvekar of the Energy Efficient Digital Circuits group (where the authors work) for the time he spent with us aiding our debugging of data collection and analysis problems. We would also like to thank Albert Kwon, our TA, for his insightful advice over the course of the project.
+The authors would like to extend our deepest thanks to Chiraag Juvekar of the Energy Efficient Digital Circuits and Systems group for the time he spent with us aiding our debugging of data collection and analysis problems. We would also like to thank Albert Kwon, our TA, for his insightful advice over the course of the project.
 
 
 \begin{thebibliography}{1}
@@ -138,7 +142,13 @@ Oswald, Elisabeth, et al.  \emph{Side-Channel Analysis Resistant Description of 
     \url{http://www.das-labor.org/wiki/AVR-Crypto-Lib/en}. \emph{AVR-Crypto-Lib}. \hskip 1em plus
     0.5em minus 0.4em\relax 2013.
 
+\bibitem{atmeldatasheet}
+    \url{http://goo.gl/hhZF2z}. \emph{Atmel 8-bit Microcontroller Datasheet}. \hskip 1em plus
+    0.5em minus 0.4em\relax 2014.
 
+\bibitem{nandflash}
+    Handy, Jim. \url{http://goo.gl/5QZHhK} \emph{3D NAND: Making a Vertical String}. \hskip 1em plus
+    0.5em minus 0.4em\relax 2013.
 \end{thebibliography}
 \end{document}
 
