@@ -25,7 +25,7 @@
 \thanks{All authors are with the Department
 of Electrical and Computer Engineering, Massachusetts Institute of Technology, Cambridge,
 MA, 02139 USA}% <-this % stops a space
-\thanks{To contact the authors: \tt{utsav@mit.edu}, \tt{lisaho@mit.edu}, and \tt{skandak@mit.edu}}% <-this % stops a space
+\thanks{To contact the authors: \texttt{utsav@mit.edu}, \texttt{lisaho@mit.edu}, and \texttt{skandak@mit.edu}}% <-this % stops a space
 \thanks{Manuscript completed for 6.858 Computer Systems Security; completed on December 5, 2015}}
 
 
@@ -50,11 +50,12 @@ We aim to demonstrate a reasonably realistic side-channel attack on AES on one s
 
 In section two, we review for the read the theoretical ideas underpinning our attack. In section three, we describe our implementations our hardware setup, power measurement infrastructure, correlation methodologies, instructive problems that we encountered, and overview the structure of our source code. In section four, we describe quantitatively describe the results of our attack.
 
-% Explain what side-channel attacks are, why they're important, and past attack
-% Overview the structure of the paper
-
 \section{Preliminaries}
 \subsection{Controller Specifications}
+The ATMega328 family of chips is an 8-bit microcontroller series with 32 KB of NAND-type flash and 2KB of SRAM. The controller runs off a 16 MHz external clock on the Arduino board. Typical power consumption of the chip ranges from 7 to 12V, with a 20mA current draw, depending on the peripheral and I/O pin usage \cite{atmeldatasheet}. Out attack exploits the NAND-type flash memory architecture that consumes marginally more power when accessing addresses that store bits with lower Hamming weight \footnote{NAND-flash works by charging and recharge the memory cell line} \cite{nandflash}.
+
+The encryption program running on our ATMega328 uses an Arduino-specific port of the \texttt{avr-crypto-lib} by Davy Landman and Bochum Hackerspace \cite{AESLib} \cite{daslabor}. \texttt{AESLib} is one of the more widely-used AES implementations for Arduino, and includes support for ECB and CBC-modes of AES. Our team decided that ECB-mode would be more amiable to a power correlation attack, and correspondingly chose to exploit the library's AES-ECB implementation. We discuss ECB in further depth in section 3.D.
+
 % Discuss AESLib, ATMel, AVR architecture, possibly Flash memory model and vector of attack, give some specs
 \subsection{Correlation Power Analysis}
 % Briefly explain how CPA works
@@ -85,10 +86,13 @@ In section two, we review for the read the theoretical ideas underpinning our at
 \item FUNDAMENTALLY A PROBLEM WITH DATA
 \end{itemize}
 \subsection{Caveats}
-- EBC mode
+We address concerns and discuss the drawbacks for our chosen method of attack:
+\begin{itemize}
+    \item[--] We chose to attack the Arduino library's implementation AES-ECB mode. Althought ECB is not semantically secure (e.g. you can derive information about the plaintext from the ciphertext), ECB is still (unfortunately) used as the default option in a number of crypto-suites, \texttt{avr-crypto-lib} included. This is because of it's relatively simple implementation, compared to other more sophisticated modes of AES. Furthermore, our attack does not exploit the plaintext-ciphertext correlations in ECB to derive the key; rather, it uses our power sidechannel. For our team's first power-trace based attack, we chose a mode that we were confident that might have some correlation with the plaintext-key-guess XOR (the first computation in the first step of ECB). It might be possible to adapt our attack to CBC-mode as well.
 - presence of trigger
 - more
 - go over the graphs, and timing/accuracy results of tests
+\end{itemize}
 \subsection{Overview of Source Code}
 - overview everything in dropbox
 
@@ -125,6 +129,14 @@ Altera Corporation, \emph{FPGAs with built-in AES: The key to secure system desi
 \bibitem{smalldevice}
 Oswald, Elisabeth, et al.  \emph{Side-Channel Analysis Resistant Description of the AES S-Box}.\hskip 1em plus 
   0.5em minus 0.4em\relax 2005.
+
+\bibitem{AESLib}
+    \url{https://github.com/DavyLandman/AESLib}. \emph{Arduino AESLib}. \hskip 1em plus
+    0.5em minus 0.4em\relax 2015.
+
+\bibitem{daslabor}
+    \url{http://www.das-labor.org/wiki/AVR-Crypto-Lib/en}. \emph{AVR-Crypto-Lib}. \hskip 1em plus
+    0.5em minus 0.4em\relax 2013.
 
 
 \end{thebibliography}
