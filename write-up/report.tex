@@ -54,7 +54,7 @@ In section two, we review for the read the theoretical ideas underpinning our at
 \subsection{Controller Specifications}
 The ATMega328 family of chips is an 8-bit microcontroller series with 32 KB of NAND-type flash and 2KB of SRAM. The controller runs off a 16 MHz external clock on the Arduino board. Typical power consumption of the chip ranges from 7 to 12V, with a 20mA current draw, depending on the peripheral and I/O pin usage \cite{atmeldatasheet}. Out attack exploits the NAND-type flash memory architecture that consumes marginally more power when accessing addresses that store value-zero (discharge) bits \footnote{In a highly simplified power consumption model, NAND-flash charges a central power line connected to a series of memory cells. Depending on the value stored in the accessed memory cell, the line is discharged or not. Thus, line requires data-dependent recharging.} \cite{nandflash}.
 
-The encryption program running on our ATMega328 uses an Arduino-specific port of the \texttt{avr-crypto-lib} by Davy Landman and Bochum Hackerspace \cite{AESLib} \cite{daslabor}. \texttt{AESLib} is one of the more widely-used AES implementations for Arduino, and includes support for ECB and CBC-modes of AES. Our team decided that ECB-mode would be more amiable to a power correlation attack, and correspondingly chose to exploit the library's AES-ECB implementation. We discuss ECB in further depth in section 3.D.
+The encryption program running on our ATMega328, \texttt{AESLib}, uses an Arduino-specific port of the \texttt{avr-crypto-lib} by Davy Landman and Bochum Hackerspace \cite{AESLib} \cite{daslabor}. \texttt{AESLib} is one of the more widely-used AES implementations for Arduino, and includes support for ECB and CBC-modes of AES. Our team decided that ECB-mode would be more amiable to a power correlation attack, and correspondingly chose to exploit the library's AES-ECB implementation. We discuss ECB in further depth in section 3.D.
 
 \subsection{Correlation Power Analysis}
 % Briefly explain how CPA works
@@ -74,7 +74,7 @@ A central piece of our work was developing the serial-connection based data coll
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=2.5in]{Experiment_Setup}
+\includegraphics[width=2.5in]{setup}
 \caption{The oscilloscope probes voltages on the chip's power line, starting automated power trace on a trigger that signals the start of AES}
 \label{fig_sim}
 \end{figure}
@@ -87,7 +87,7 @@ In the final iteration of our system, we have a orchestrating computer $C$ send 
 
 More recently, we have been attempting to use the Tektronix $Fast Frames$ feature to take capture batches of 2,500-point traces at once, and use one memory-read, GPIB-write operation to transfer these traces to the computer. This would allow us much faster trace measurement, which is currently bottlenecked by the GPIB-write operation. As we will discuss in Section 4, the number of key bytes we can recover is directly correlated with the number of plaintexts we can capture and average.
 
-Photos of our collection framework can be found at \texttt{\url{https://www.dropbox.com/sh/usialgelvfqlsdr/AACvqOHKEWoumWNYi2WRIebCa?dl=0}}. Of perhaps small interest is the grounded aluminum food box encapsulating the ATMega328 setup, which reduced the EM noise and interference which we noticed in our power traces.
+Photos of our collection framework can be found at \texttt{\url{https://www.dropbox.com/sh/usialgelvfqlsdr/AACvqOHKEWoumWNYi2WRIebCa?dl=0}}. Of perhaps small interest is the grounded aluminum box encapsulating the ATMega328 setup, which reduced the EM noise and interference which we noticed in our power traces.
 
 \subsection{Implementation of CPA and Power Model}
 
@@ -106,34 +106,51 @@ Based on these results, we chose to move forward by correlating the power consum
 
 This symmetry from the XOR output meant we wouldn't be able to recover the correct key without applying brute force guessing after running CPA. Using the output of the SBOX for the power model would have the advantage of avoiding this symmetry, giving us one correct key. After getting more reliable traces, we retried CPA with a power model employing the Hamming Weight of the SBOX output and found that this was actually a reliable power model to use. Using Hamming Weight of SBOX output while increasing the number and reliability of traces we used, we were able to recover all key bytes.
 
-\subsection{Instructive Problems Encountered (and Panaceas)}
+ In later iterations of our code, we aimed to speed up analysis of waveforms, and obtain results like that in Figure 3 more quickly; so we replaced our correlation function with a faster iterative correlation function that calculates the correlations given $1,2,3,\ldots, i, \ldots, num\_plaintexts$ traces, without recalculating correlations for the previous $i-1$ traces.
 
-
-\begin{itemize}[-]
-\item remove difAmp -> increase resistor value -> increase bandwidth?//used to measure current before
-\item serial print adds noise
+\subsection{CPA Challenges and Solutions}
+[describe problem and solution for each one of these]
+\begin{itemize}
+\item Why we removed difAmp -> increase resistor value -> increase bandwidth?//used to measure current before
 \item averaging to solve dc shift
-\item interrupt introduces clock jitter
+\item remove serial print and interrupt to solve clock jitter and time shift/skew
 \item adding nops to prevent asyncronous / delay
 \item original hypothesis about sbox:  SBox bad for correlation? the flash architecture -> bit block bit block bar
-\item FUNDAMENTALLY A PROBLEM WITH DATA
+\item Adding more data solved problems (link to  results for more detail)
 \end{itemize}
-\subsection{Caveats}
-We address concerns and discuss the drawbacks for our chosen method of attack:
+\subsection{Drawbacks}
+Aspects of our attack implementation are unlikely to be possible in real-world attack scenarios; we address these concerns and suggest possible remedies.
 \begin{itemize}
-    \item[--] We chose to attack the Arduino library's implementation AES-ECB mode. Althought ECB is not semantically secure (e.g. you can derive information about the plaintext from the ciphertext), ECB is still (unfortunately) used as the default option in a number of crypto-suites, \texttt{avr-crypto-lib} included. This is because of it's relatively simple implementation, compared to other more sophisticated modes of AES. Furthermore, our attack does not exploit the plaintext-ciphertext correlations in ECB to derive the key; rather, it uses our power sidechannel. For our team's first power-trace based attack, we chose a mode that we were confident that might have some correlation with the plaintext-key-guess XOR (the first computation in the first step of ECB). It might be possible to adapt our attack to CBC-mode as well.
-- presence of trigger
-- more
-- go over the graphs, and timing/accuracy results of tests
+    \item[--] We chose to attack the Arduino library's implementation AES-ECB mode. Althought ECB is not semantically secure (i.e. you can derive information about the plaintext from the ciphertext), ECB is still (unfortunately) used as the default option in a number of crypto-suites, \texttt{avr-crypto-lib} included. This is because of it's relatively simple implementation, compared to other more sophisticated modes of AES. Furthermore, our attack does not exploit the plaintext-ciphertext correlations in ECB to derive the key; rather, it uses our power sidechannel. For our team's first power-trace based attack, we chose a mode that we were confident that might have some correlation with the plaintext-key-guess XOR (the first computation in the first step of ECB). It might be possible to adapt our attack to CBC-mode as well.
+    \item[--] We modified the \texttt{AESLib} assembly code to pull high one of Arduino's I/O to signal signal the oscilloscope where to begin collecting traces (the scope's trigger). In a real world attack, it unlikely that we will be able to insert a convenient signal to aid our trace collection and analysis result. Nonetheless, careful manual analysis of one trace could yield a constant time frame of interest, which, barring waveform time shifts, we could use to automate trace collection and trace slicing. We have demonstrated way to reduce time-shift errors in our work.
+    \item[--] We chose to collect traces from plaintexts that were purely alphanumeric (albeit chosen randomly within that). This solved issues we faced regarding transmission and rendering of special characters over the Arduino-computer serial port, which we needed to use as we were verifying that the Arduino was correctly executing AES. It is unlikely that this choice of plaintext adversely affected or falsely bossted our results. Nonetheless, future studies might be interested in investigating how choice of plaintext affects, if at all, our correlation power.
 \end{itemize}
 \subsection{Overview of Source Code}
-- overview everything in dropbox
+All our source code can be found at \texttt{\url{https://github.com/skoppula/aes-sidechannel}}. Files in the source that might be of interest:
+\begin{itemize}
+    \item[--] \texttt{cpa/cpa.py} contains the source that reads in the waveform binary data (with helper \texttt{wfm2read\_fast.py}) and subsequently run CPA. It outputs the top five key byte guesses per byte of key, and a correlation visualizations like Figure \ref{results_random2}.
+    \item[--] \texttt{data-capture/arduino-aes-2} runs AES encryption on a new plaintext 10 times, everytime a 'run' command is received on the terminal. The ten traces are later averaged on the oscilloscope. \texttt{data-capture/arduino-aes-1} runs AES encryption on a plaintext sent over the serial port.
+    \item[--] \texttt{data-capture/scope-interface-2} runs a Python script that interfaces with the Arduino to run AES at regular intervals, and interfaces with the oscilloscope to collect the corresponding traces. \texttt{data-capture/scope-interface-1} is a Matlab implementation of similar functionality that we originally used to interface with the oscilloscope over GPIB; interfacing with the Arduino was done seperately in this version of the code (in \texttt{data-capture/send-plaintexts-processing})
+    \item[--] \texttt{data-capture/process-wfms} contains the scripts we put together initially to parse and plot the first \texttt{*.wfm} waveform binaries that we recieved from the oscilloscope. This was later integrated into \texttt{cpa/cpa.py}
+\end{itemize}
 
 \section{Results}
-2.5 hours for 500 plaintexts
-5 minutes to process
+We found more robust results by triggering our traces to start from the beginning of the AES EBC-mode \texttt{xor(plaintext, key} and continue until $SBOX$ permutations are complete. These computations empirically correlated well with our key guesses for us. Furthermore, we found much higher rates of correct key guesses by disabling the chip's serial output and disabling interrupts. This seemed to eliminate inter-trace time-shifts that messed with our correlation analysis. In addition, averaging ten traces at a time seemed to eliminate DC power bias that shifted the power magnitude up and down between traces run on the same plaintext. Only after these corrections were we able to find any meaningful correlations and extract our first correct key guess.
 
-Most of our data and results can be found at \texttt{\url{https://www.dropbox.com/sh/07xni6s4tu4klme/AABnrBK-QZCVO1tMK4GFeQ5ta?dl=0}}.
+We ran our system on three seperate times, with three different private-keys: two randomly generated keys and one non-random key \footnote{By non-random, we mean the key \texttt{[0x0 0x1 0x2 0x3 0x4 0x5 0x6 0x7 0x8 0x9 0xA 0xB 0xC 0xD 0xE 0xF]}. This was the test key chosen during the development stage of our project, as we were building the trace-collection infrastructure and writing the CPA code.}. In all three, we were able to discover the correct key.
+
+However, interestingly, the number of traces required to get complete accuracy differed between the keys. Specifically, it took 600 trace averages (each corresponding to a plaintext) to get complete accuracy on the non-random key, 300 trace averages to completely uncover the first random key, and 400 trace average to uncover the second random. We were interested in understanding the performance of each key guess as the number of input plaintext traces increased, so for each run, we created a plot that tracked each key guess's correlation with the trace data as the amount of trace data increased (Fig. \ref{results_random2})
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=7in]{12-04-15-19-46-23-newrandomkey2-corr-evolution}
+\caption{Each graph corresponds to one of the 16 blocks/16 plaintext bytes/16 key bytes in our AES implementation. A single graph plots the correlation of all 256 key guesses (y-axis) with the power trace data, as more data is fed into the correlation (x-axis). The red line represents the correct key guess. Notice that by the time we feed the 400th trace into our CPA implementation, the correct key byte is the key guess with the highest correlation with all the traces (visible in the height of each red line at $x=400$). Results for the other two CPA runs be found Dropbox linked below.}
+\label{results_random2}
+\end{figure*}
+
+It takes roughly 30 minutes for our infrastructure to collect the traces for the encryption of 100 plaintexts. Data collection time seems to scale linearly with the number of plaintexts we process: iencrypting and collecting the traces for 500 traces, takes on average two and half hours. Processing these 500 traces, and extracting the correlation values and key estimates over $i$ plaintexts for all $i$ (Fig. \ref{results_random2}) takes roughly five minutes.
+
+Our data and results can be found at \texttt{\url{https://www.dropbox.com/sh/07xni6s4tu4klme/AABnrBK-QZCVO1tMK4GFeQ5ta?dl=0}}.
 
 \section*{Acknowledgment}
 The authors would like to extend our deepest thanks to Chiraag Juvekar of the Energy Efficient Digital Circuits and Systems group for the time he spent with us aiding our debugging of data collection and analysis problems. We would also like to thank Albert Kwon, our TA, for his insightful advice over the course of the project.

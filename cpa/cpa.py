@@ -118,7 +118,6 @@ def read_data(wfm_folder='12-03-15-17-49-12', pt_file='run_log', num_traces=100)
     # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
     return traces, plaintext
 
-<<<<<<< HEAD
 def new_corr(state, power_hypothesis_trace, trace):
     '''
         args:
