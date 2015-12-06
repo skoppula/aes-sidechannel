@@ -90,7 +90,17 @@ More recently, we have been attempting to use the Tektronix $Fast Frames$ featur
 Photos of our collection framework can be found at \texttt{\url{https://www.dropbox.com/sh/usialgelvfqlsdr/AACvqOHKEWoumWNYi2WRIebCa?dl=0}}. Of perhaps small interest is the grounded aluminum food box encapsulating the ATMega328 setup, which reduced the EM noise and interference which we noticed in our power traces.
 
 \subsection{Implementation of CPA and Power Model}
-- discuss different power models we've tried, faster correlation
+
+We experimented with modelling the expected power consumption from both the XOR operation in the \texttt{AddRoundKey} step and the SBOX substitution from the \texttt{SubBytes} step of AES. To figure out which one would be more effective, we examined the power consumption of just the AVR assembly operations corresponding to these steps on the Arduino. We were unable to easily make out any difference in power consumption between when the result of the SBOX operation was all "0"s or all "1"s, but we were able to easily see a diffference in power consumption between when the result of the XOR operation was all "0"s or all "1" (see figure below).
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{XOR_PC}
+\caption{XOR operations alternated between results of all "0"s and all "1"s. The power consumption was noticeably different depending on the Hamming Weight of the result.}
+\label{fig_sim}
+\end{figure}
+
+ discuss different power models we've tried, faster correlation
 
 \subsection{Instructive Problems Encountered (and Panaceas)}
 
