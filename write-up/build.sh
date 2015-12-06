@@ -1,7 +1,7 @@
 #!/bin/bash
 
 file="report"
-totalfile="$file"
+totalfile="lisayz-skoppula-utsav-$file"
 
 # Compile the tex file
 pdflatex --shell-escape -jobname=$totalfile ${file}.tex
