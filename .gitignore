@@ -4,3 +4,6 @@ data-capture/arduino-code/.build/*
 *.pyc
 *.npy
 *.swp
+*.wfm
+*.swn
+*.swo
