@@ -2,6 +2,11 @@ import serial
 import time
 import sys
 
+num_traces = 500
+
+for i in range(0, num_traces):
+    ser.write(b"r")
+    time.sleep(1)
 port = sys.argv[1]
 print 'Using port', port
 

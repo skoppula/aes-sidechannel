@@ -37,12 +37,13 @@ def read_pt(fname, num_traces):
     return pt_list
 
 def corr(x, y):
+    # C(x, y) = (x.y - N <x><y>)/sqrt((x.x - N<x><x>)(y.y-N<y><y>))
     assert x.shape[0] == y.shape[0], 'Matrix row count mismatch'
 
     x_std = np.std(x, axis=0)
     y_std = np.std(y, axis=0)
     assert x_std.any() != 0, 'x std is 0'
-    assert y_std.any() !=0, 'y std is 0'
+    assert y_std.any() != 0, 'y std is 0'
     x = x/x_std
     y = y/y_std
 
@@ -117,7 +118,76 @@ def read_data(wfm_folder='12-03-15-17-49-12', pt_file='run_log', num_traces=100)
     # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
     return traces, plaintext
 
+<<<<<<< HEAD
+def new_corr(state, power_hypothesis_trace, trace):
+    '''
+        args:
+            state   dictionary of xd1, yd1, xdx, ydy, xdy, n. n starts from 10.
+            power_hypothesis_trace  array of length 256
+            trace   array of length len_trace
+        returns:
+            new_state   updated dictionary with new value
+            cc_byte_num_traces  cc for a particular byte & number of traces
+    '''
+    xdy_new = state['x.y'] + np.dot(np.transpose(power_hypothesis_trace), trace)
+    xdx_new = state['x.x'] + np.dot(np.transpose(power_hypothesis_trace), power_hypothesis_trace)
+    ydy_new = state['y.y'] + np.dot(np.transpose(trace), trace)
+    xd1_new = state['x.1'] + power_hypothesis_trace
+    yd1_new = state['y.1'] + trace
+    x_bar = xd1_new/(state['n']+1)
+    y_bar = yd1_new/(state['n']+1)
 
+    c = xdy_new -
+    
+
+def run_cpa_fast(traces, plaintext):
+    '''
+        args:
+            traces: matrix of [num_traces x trace_len] 
+            plaintext: matrix of [num_traces x size_of_plaintext]
+    '''
+
+    num_traces = len(traces)
+    trace_len = len(traces[0])
+    size_plaintext = len(plaintext)
+    assert num_plaintext_bytes == 16
+    pwr_model = np.vectorize(sbox_power)
+
+    lines = np.zeros((size_plaintext, 256, num_traces))
+    
+    for byte in xrange(size_plaintext):
+        CC_for_byte_and_trace_num = None # [256 x trace_len]
+        power_hypothesis = np.zeros((num_traces, 256))  # for one byte [num_traces x 256]
+        
+        # Create the power model from plaintext
+        for k in xrange(256):
+            # XOR the plaintext byte with key byte and put the result through the S-BOX
+            power_hypothesis[:, k] = pwr_model(plaintext[:, byte].astype(int), k)
+        
+        state = {'x.x':0, 'y.y':0, 'x.1':0, 'y.1':0, 'x.y':0, 'n':-1}
+        # correlations for base case -- first ten traces
+        first_ten_traces = traces[:10]
+        first_ten_ph = power_hypothesis[:10]
+        cc_for_byte_and_trace_first_ten = corr(first_ten_ph, first_ten_traces)
+        # return CC, PH, x.1, y.1, x.x, y.y, x.y
+        start_state['x.1'] = np.dot(power_hypothesis, np.ones((power_hypothesis.shape[1], power_hypothesis.shape[0])))
+        start_state['y.1'] = np.dot(traces, np.ones((traces.shape[1], traces.shape[0])))
+        start_state['x.x'] =  np.dot(np.transpose(power_hypothesis), power_hypothesis)
+        start_state['y.y'] = np.dot(np.transpose(traces), traces)
+        start_state['x.y'] = np.dot(np.transpose(power_hypothesis), traces)
+        start_state['n'] = 9
+             
+        for trace_num in xrange(10, traces):
+            state, CC_for_byte_and_trace_num = new_corr(state, power_hypothesis[trace_num], traces[trace_num])
+            CC_for_byte_and_trace_num = np.abs(CC_for_byte_and_trace_num)
+            lines[byte, :, trace_num] = np.max(CC_for_byte_and_trace_num, axis=1)
+
+    return lines
+
+
+
+# verbose_return returns aidditional information useful in calculating
+#   cc for one more tracke
 def run_cpa(traces, plaintext, num_traces=0, verbose=False):
     if num_traces != 0:
         traces = traces[:num_traces]
@@ -153,6 +223,19 @@ def run_cpa(traces, plaintext, num_traces=0, verbose=False):
         if verbose:
             print 'max keys: ' + str(max_10_keys)
         # print '\t',sorted([(value, i) for i,value in enumerate(max_samples)])
+    # return CC, PH, x.1, y.1, x.x, y.y, x.y
+    x_ones = np.ones((power_hypothesis.shape[1], power_hypothesis.shape[0]))
+    xd1 = np.dot(power_hypothesis, x_ones)
+    print 'xd1: '
+    print xd1.shape
+    yd1 = np.dot(traces, np.ones((traces.shape[1], traces.shape[0])))
+    xdx = np.dot(np.transpose(power_hypothesis), power_hypothesis)
+    ydy = np.dot(np.transpose(traces), traces)
+    xdy = np.dot(np.transpose(power_hypothesis), traces)
+    if verbose_return:
+        return CC, PH, xd1, yd1, xdx, ydy, xdy
+    else:
+        return CC, PH
     return CC, PH
 
 def run_key_evolution(traces, plaintext, limits):
