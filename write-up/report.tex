@@ -34,7 +34,7 @@ MA, 02139 USA}% <-this % stops a space
 \maketitle
 
 \begin{abstract}
-    We demonstrate extraction of a private-key from Flash program memory on the ATMega328 microcontroller (the controller used on the popular Arduino Uno/Genuino board). We loaded a standard AVR-architecture AES implementation onto the chip and ran this implementation to encrypt 500 randomly chosen plaintexts. By carefully measuring the chips power consumption, we were able to correlate the consumed power with the input plaintexts and key values that might be used to encrypt each AES block, and back-derive the hard-coded key used for encryption. We describe here our test infrastructure for automated power trace collection, an overview of our correlation attack, sanitization of the traces and interesting stumbling blocks encountered during data collection and analysis, and the results of our attack.
+    We demonstrate extraction of a private-key from Flash program memory on the ATMega328 microcontroller (the controller used on the popular Arduino Genuino/Uno board). We loaded a standard AVR-architecture AES implementation onto the chip and ran this implementation to encrypt 500 randomly chosen plaintexts. By carefully measuring the chips power consumption, we were able to correlate the consumed power with the input plaintexts and key values that might be used to encrypt each AES block, and back-derive the hard-coded key used for encryption. We describe here our test infrastructure for automated power trace collection, an overview of our correlation attack, sanitization of the traces and interesting stumbling blocks encountered during data collection and analysis, and the results of our attack.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -42,7 +42,15 @@ AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
 \end{IEEEkeywords}
 
 \section{Introduction}
-% Explain what side-channel attacks are, why they're important, and past attacks
+The recent wave of concern about data privacy and snooping of insecure communication channels as brought to public attention the necessity to more broadly adopt encryption algorithms. One of the more popular symmetric-key algorithms, Advanced Encryption Standard (AES), has been the U.S. government standard since 2002 (ISO/IEC 18033-3), and used in a multitude of applications: SSL/TLS protocols \cite{ssl}, Kerberos \cite{kerberos}, and demonstrably secure embedded devices \cite{embedded}. This last application in particular, embedded devices, has seen much growth in recent years, given the advantages of computation on smaller embedded devices: low power, lower system latency, and generally smaller device size.
+
+Small hardware implementations, however, are notoriously vulnerable to a range of side-channel attacks \cite{smalldevice}. Timing, electromagnetic radiation, and power consumption are just three commonly exploited vectors used to leak information about ongoing computations and data on the chip. Knowing that a device architecture is amiable to side-channel exploitation is useful in deciding whether to execute unprotected sensitive computations or store data on devices with similar memory and processor characteristics.
+
+We aim to demonstrate a reasonably realistic side-channel attack on AES on one such embedded device: the ATMega328 microcontroller produced by Atmel. The ATMega328 is the basis for the widely popular development board, Arduino Uno \footnote{Other models of the Arduino, such as the Arduino Mega and Arduino Genuino Micro use ATMega chips as well, that have a similar architecture to the ATMega328. It is possible that this attack could be adapted to those chips as well.}
+
+In section two, we review for the read the theoretical ideas underpinning our attack. In section three, we describe our implementations our hardware setup, power measurement infrastructure, correlation methodologies, instructive problems that we encountered, and overview the structure of our source code. In section four, we describe quantitatively describe the results of our attack.
+
+% Explain what side-channel attacks are, why they're important, and past attack
 % Overview the structure of the paper
 
 \section{Preliminaries}
@@ -50,12 +58,13 @@ AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
 % Discuss AESLib, ATMel, AVR architecture, possibly Flash memory model and vector of attack, give some specs
 \subsection{Correlation Power Analysis}
 % Briefly explain how CPA works
+% sbox, AES is a block cipher that encrypts blocks of plaintext in a number 
 
 \section{Protocols and Procedure}
 
 \subsection{Data Collection Infrastructure}
 \begin{itemize}[-]
-\item Discuss trigger with memoery mapped register with assembly sbi instruction, schematic for collection, oscilloscope model/programmer model GPIB with assembly sbi instruction
+    \item Discuss trigger with memoery mapped register with assembly sbi instruction, schematic for collection, oscilloscope model/programmer model GPIB with assembly sbi instruction. 
 \item Faraday shield metal box
 \item fast frames
 \end{itemize}
@@ -64,6 +73,7 @@ AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
 - discuss different power models we've tried, faster correlation
 
 \subsection{Instructive Problems Encountered (and Panaceas)}
+
 
 \begin{itemize}[-]
 \item remove difAmp -> increase resistor value -> increase bandwidth?//used to measure current before
@@ -74,11 +84,15 @@ AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
 \item original hypothesis about sbox:  SBox bad for correlation? the flash architecture -> bit block bit block bar
 \item FUNDAMENTALLY A PROBLEM WITH DATA
 \end{itemize}
+\subsection{Caveats}
+- EBC mode
+- presence of trigger
+- more
+- go over the graphs, and timing/accuracy results of tests
 \subsection{Overview of Source Code}
 - overview everything in dropbox
 
 \section{Results}
-- go over the graphs, and timing/accuracy results of tests
 
 %\begin{figure}[!t]
 %\centering
@@ -92,14 +106,26 @@ AES, side-channel, power consumption, ATMega328, Correlation Power Analysis
 
 
 \section*{Acknowledgment}
-The authors would like to extend our deepest thanks to Chiraag Juvekar for the time he spent with us aiding our debugging of data collection and analysis problems. 
+The authors would like to extend our deepest thanks to Chiraag Juvekar of the Energy Efficient Digital Circuits group (where the authors work) for the time he spent with us aiding our debugging of data collection and analysis problems. We would also like to thank Albert Kwon, our TA, for his insightful advice over the course of the project.
 
 
 \begin{thebibliography}{1}
+\bibitem{ssl}
+Lee, Homin K and Malkin, Tal and Nahum, Erich, \emph{Cryptographic strength of ssl/tls servers: current and recent practices}.\hskip 1em plus
+  0.5em minus 0.4em\relax Proceedings of the 7th ACM SIGCOMM conference on Internet measurement, 2007.
 
-\bibitem{CPA guide}
-H.~Kopka and P.~W. Daly, \emph{A Guide to \LaTeX}, 3rd~ed.\hskip 1em plus
-  0.5em minus 0.4em\relax Harlow, England: Addison-Wesley, 1999.
+\bibitem{kerberos}
+Rathore, Romendrapal Singh and Pal, BL and Kumar, Shiv. \emph{Analysis and Improvement in Kerberos 5}.\hskip 1em plus
+  0.5em minus 0.4em\relax 2015.
+
+\bibitem{embedded}
+Altera Corporation, \emph{FPGAs with built-in AES: The key to secure system designs}.\hskip 1em plus
+  0.5em minus 0.4em\relax Embedded Computing Design, July 15, 2008.
+
+\bibitem{smalldevice}
+Oswald, Elisabeth, et al.  \emph{Side-Channel Analysis Resistant Description of the AES S-Box}.\hskip 1em plus 
+  0.5em minus 0.4em\relax 2005.
+
 
 \end{thebibliography}
 \end{document}
