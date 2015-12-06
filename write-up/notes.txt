@@ -1,0 +1,18 @@
+ascii serial port problems
+
+serial print adds noise
+averaging to solve dc shift
+inter
+interrupt introduces clock jitter
+adding nops to prevent asyncronous / delay
+
+new schematic
+
+remove difAmp -> increase resistor value -> increase bandwidth?
+
+put faradayshiel
+
+why SBox? the flash architecture -> bit block bit block bar
+
+flash
+memoery mapped register with assembly sbi instruction

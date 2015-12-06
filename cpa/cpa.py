@@ -1,4 +1,4 @@
-r Python key recovery
+# Python key recovery
 # Modelled off Matlab code from 2014, Filip Stepanek and Jiri Bucek
 
 import numpy as np
@@ -118,6 +118,7 @@ def read_data(wfm_folder='12-03-15-17-49-12', pt_file='run_log', num_traces=100)
     # ciphertext = myin.myin('../traces_unknown_key/ciphertext.txt', columns, rows)
     return traces, plaintext
 
+<<<<<<< HEAD
 def new_corr(state, power_hypothesis_trace, trace):
     '''
         args:
@@ -187,7 +188,7 @@ def run_cpa_fast(traces, plaintext):
 
 # verbose_return returns aidditional information useful in calculating
 #   cc for one more tracke
-def run_cpa(traces, plaintext, num_traces=0, verbose_return=False, verbose=False):
+def run_cpa(traces, plaintext, num_traces=0, verbose=False):
     if num_traces != 0:
         traces = traces[:num_traces]
         plaintext = plaintext[:num_traces]
@@ -235,6 +236,7 @@ def run_cpa(traces, plaintext, num_traces=0, verbose_return=False, verbose=False
         return CC, PH, xd1, yd1, xdx, ydy, xdy
     else:
         return CC, PH
+    return CC, PH
 
 def run_key_evolution(traces, plaintext, limits):
     lines = np.zeros((16, 256, limits[1]-limits[0]+1))
@@ -242,7 +244,7 @@ def run_key_evolution(traces, plaintext, limits):
         print 'Waveforms %d/%d' % (N, limits[1])
         CC,_ = run_cpa(traces, plaintext, N, N==limits[1])
         for byte in xrange(16):
-           lines[byte, :, N-limits[0]] = np.max(CC[byte], axis=1)
+            lines[byte, :, N-limits[0]] = np.max(CC[byte], axis=1)
     return lines
 
 def plot_key_evolution(lines, limits, key):
