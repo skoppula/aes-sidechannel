@@ -8,7 +8,7 @@ pdflatex --shell-escape -jobname=$totalfile ${file}.tex
 pdflatex --shell-escape -jobname=$totalfile ${file}.tex
 
 # Cleanup the junk
-rm -rf *.log *.aux missfont.log _minted* texput.log *.out *.dvi
+rm -rf *.log *.aux missfont.log _minted* texput.log *.out *.dvi *.pyg
 
 if [ "$(uname)" == "Darwin" ]; then
     open ${totalfile}.pdf &

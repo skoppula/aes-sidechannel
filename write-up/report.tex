@@ -74,7 +74,7 @@ A central piece of our work was developing the serial-connection based data coll
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=2.5in]{Experiment_Setup}
+\includegraphics[width=2.5in]{setup_Setup}
 \caption{The oscilloscope probes voltages on the chip's power line, starting automated power trace on a trigger that signals the start of AES}
 \label{fig_sim}
 \end{figure}
@@ -113,7 +113,11 @@ We address concerns and discuss the drawbacks for our chosen method of attack:
 - go over the graphs, and timing/accuracy results of tests
 \end{itemize}
 \subsection{Overview of Source Code}
-- overview everything in dropbox
+All our source code can be found at \texttt{\url{https://github.com/skoppula/aes-sidechannel}}. Files in the source that might be of interest:
+\begin{itemize}
+    \item[--] \texttt{cpa/cpa.py} contains the source that reads in the waveform binary data (with helper \texttt{wfm2read_fast.py}) and subsequently run CPA. It outputs the top five key byte guesses per byte of key, and a graph like that shown Figure 3.
+    \item[--] \texttt{data-capture/arduino-aes-2} runs 10 rounds of AES encryption everytime, 
+\end{itemize}
 
 \section{Results}
 2.5 hours for 500 plaintexts
