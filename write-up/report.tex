@@ -11,7 +11,7 @@
 \usepackage{url}
 \usepackage{array}
 \usepackage{hyperref}
-
+\usepackage{float}
 
 % correct bad hyphenation here
 \hyphenation{op-tical net-works semi-conduc-tor}
@@ -72,7 +72,7 @@ After building a power hypothesis consisting of the amount of power consumed for
 \subsection{Data Collection Infrastructure}
 A central piece of our work was developing the serial-connection based data collection framework to feed plaintexts for encryption to the Arduino and read the resulting power trace from the oscilloscope. An outline is given in Fig. \ref{fig_sim}.
 
-\begin{figure}[!t]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=2.5in]{setup}
 \caption{The oscilloscope probes voltages on the chip's power line, starting automated power trace on a trigger that signals the start of AES}
@@ -153,7 +153,7 @@ We conducted the experiment three times, with three different secret keys: two r
 
 However, interestingly, the number of traces required to recover all key bytes differed from key to key. Specifically, it took 600 trace averages (each corresponding to a plaintext) to get complete accuracy on the non-random key, 300 trace averages to completely uncover the first random key, and 400 trace averages to uncover the second random key. We were interested in understanding the performance of each key guess as the number of input plaintext traces increased; for each run, we created a plot that tracked each key guess's correlation with the trace data as the amount of trace data increased (Fig. \ref{results_random2})
 
-\begin{figure*}[!t]
+\begin{figure*}[]
 \centering
 \includegraphics[width=7in]{12-04-15-19-46-23-newrandomkey2-corr-evolution}
 \caption{Each graph corresponds to one of the 16 blocks/16 plaintext bytes/16 key bytes in our AES implementation. A single graph plots the correlation of all 256 key guesses (y-axis) with the power trace data, as more data is fed into the correlation (x-axis). The red line represents the correct key guess. Notice that by the time we feed the 400th trace into our CPA implementation, the correct key byte is the key guess with the highest correlation with all the traces (visible in the height of each red line at $x=400$). Results for the other two CPA runs can be found at the Dropbox link.}
@@ -165,7 +165,9 @@ It takes roughly 30 minutes for our infrastructure to collect the traces for the
 Further data and results can be found at \texttt{\url{https://www.dropbox.com/sh/07xni6s4tu4klme/AABnrBK-QZCVO1tMK4GFeQ5ta?dl=0}}.
 
 \section*{Acknowledgments}
-We would like to extend our deepest thanks to Chiraag Juvekar of the Energy Efficient Digital Circuits and Systems group for the time he spent with us aiding our debugging of data collection and analysis problems. We would also like to thank Albert Kwon, our TA, for his insightful advice over the course of the project.
+We would like to extend our deepest thanks to Chiraag Juvekar of the Energy-Efficient Circuits and Systems group for the time he spent with us aiding our debugging of data collection and analysis problems. We would also like to thank Albert Kwon, our TA, for his insightful advice over the course of the project.
+
+
 
 
 \begin{thebibliography}{1}
